@@ -170,13 +170,14 @@ void sweep()
                     closestObjectDistance = tempObjectDistance;
                     closestObjectAngleWide = i;
                 }
+
             }
 
             // Quadrant 1
 
             if (closestObjectAngleWide >= 0 && closestObjectAngleWide <= 30)
             {
-                closestObjectAngleFineStart = 90;
+                closestObjectAngleFineStart = 30;
                 closestObjectAngleFineEnd = 0;
             }
 
@@ -196,6 +197,12 @@ void sweep()
             {
                 closestObjectAngleFineStart = 120;
                 closestObjectAngleFineEnd = 90;
+            }
+
+            else if (closestObjectAngleWide > 120 && closestObjectAngleWide <= 150)
+            {
+                closestObjectAngleFineStart = 150;
+                closestObjectAngleFineEnd = 120;
             }
 
             else if (closestObjectAngleWide > 150 && closestObjectAngleWide <= 180)
@@ -240,9 +247,11 @@ void sweep()
                 closestObjectAngleFineEnd = 330;
             }
     
-    
+            closestObjectDistance = "5";
+            
             for (int j = closestObjectAngleFineStart; j >= closestObjectAngleFineEnd; j--)
             {
+                
                 angleString = "CMD_SEN_ROT_" + String(j);
                 printMessage(angleString);
                 delay(50);
@@ -254,8 +263,11 @@ void sweep()
                 {
                     closestObjectDistance = tempObjectDistance;
                     closestObjectAngleFine = j;
+                    lcd.setCursor(0,1);
+                    lcd.print("              ");
+                    lcd.setCursor(0,1);
+                    lcd.print(j);
                 }
-
             }
 
             for(int l = 0; l < closestObjectAngleFine; l++)
