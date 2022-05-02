@@ -3,7 +3,7 @@
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-int currentSelection = 0;
+int currentSelection;
 
 void setup()
 {
@@ -17,25 +17,21 @@ void loop()
 }
 
 void mainMenu()
-{
-    
+{ 
     currentSelection = 0;
     int analogValue = 0;
+
+    lcd.clear();
+    lcd.print("13533880");
+    lcd.setCursor(0, 1);
+    lcd.print("Main Menu");
 
     while (true)
     {
         delay(100);
         analogValue = analogRead(A0);
 
-        if(currentSelection == 0)
-        {
-            lcd.clear();
-            lcd.print("13533880");
-            lcd.setCursor(0, 1);
-            lcd.print("Main Menu");
-        }
-
-        else if (analogValue <= 600 && analogValue >= 400 && currentSelection == 3)
+        if (analogValue <= 600 && analogValue >= 400 && currentSelection == 3)
         {
             delay(200);
             currentSelection = 1;
@@ -62,19 +58,20 @@ void setMenuSelection()
     if (currentSelection == 1)
     {
         lcd.setCursor(0, 1);
-        lcd.print("Wall Follow");
+        lcd.print("Control        ");
+        
     }
 
     else if (currentSelection == 2)
     {
         lcd.setCursor(0, 1);
-        lcd.print("Control        ");
+        lcd.print("Sweep         ");
     }
 
     else if (currentSelection == 3)
     {
         lcd.setCursor(0, 1);
-        lcd.print("Sweep         ");
+        lcd.print("Wall Follow");
     }
 }
 
@@ -83,17 +80,18 @@ void modeChosen()
     printMessage("CMD_START");
     if (currentSelection == 1)
     {
-        wallFollow();
+        
+        control();
     }
 
     else if (currentSelection == 2)
     {
-        control();
+        sweepMenu();
     }
 
     else if (currentSelection == 3)
     {
-        sweepMenu();
+        wallFollow();
     }
 }
 
@@ -143,7 +141,6 @@ void sweepMenu()
 {
     int analogValue = 0;
    
-
     while (true)
     {
         delay(100);
@@ -193,7 +190,7 @@ String sweep()
         printMessage("CMD_ACT_ROT_0_1");
     }
 
-    if(closestObjectDistance = "10")
+    if(closestObjectDistance == "10")
     {
         return "10";
     }
@@ -263,7 +260,8 @@ void moveIntoRange()
 
     while(distanceFromWall.charAt(0) == 'N')
     {
-        printMessage("CMD_ACT_LAT_1_3");
+        printMessage("CMD_ACT_LAT_1_4");
+        sweep();
         printMessage("CMD_SEN_IR");
         distanceFromWall = Serial.readString();
     }
@@ -320,9 +318,9 @@ void moveAcrossWall()
 
         delay(100);
 
-        if(distanceFromNextWall.charAt(0)=='N')
+        if(distanceFromNextWall.charAt(0)=='N' || distanceFromNextWall.toFloat()>3)
         {
-            printMessage("CMD_ACT_LAT_1_1");
+            printMessage("CMD_ACT_LAT_1_2");
             printMessage("CMD_ACT_ROT_1_90");
             printMessage("CMD_SEN_ROT_0");
 
@@ -337,6 +335,7 @@ void moveAcrossWall()
         else
         {
             moveTo2m();
+            moveAcrossWall();
         }
         
     }
