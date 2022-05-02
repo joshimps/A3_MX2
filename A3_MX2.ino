@@ -18,11 +18,7 @@ void loop()
 
 void mainMenu()
 {
-    lcd.clear();
-    lcd.print("13533880");
-    lcd.setCursor(0, 1);
-    lcd.print("Main Menu");
-
+    
     currentSelection = 0;
     int analogValue = 0;
 
@@ -31,10 +27,18 @@ void mainMenu()
         delay(100);
         analogValue = analogRead(A0);
 
-        if (analogValue <= 600 && analogValue >= 400 && currentSelection == 2)
+        if(currentSelection == 0)
+        {
+            lcd.clear();
+            lcd.print("13533880");
+            lcd.setCursor(0, 1);
+            lcd.print("Main Menu");
+        }
+
+        else if (analogValue <= 600 && analogValue >= 400 && currentSelection == 3)
         {
             delay(200);
-            currentSelection = 0;
+            currentSelection = 1;
             setMenuSelection();
         }
 
@@ -55,19 +59,19 @@ void mainMenu()
 
 void setMenuSelection()
 {
-    if (currentSelection == 0)
+    if (currentSelection == 1)
     {
         lcd.setCursor(0, 1);
         lcd.print("Wall Follow");
     }
 
-    else if (currentSelection == 1)
+    else if (currentSelection == 2)
     {
         lcd.setCursor(0, 1);
         lcd.print("Control        ");
     }
 
-    else if (currentSelection == 2)
+    else if (currentSelection == 3)
     {
         lcd.setCursor(0, 1);
         lcd.print("Sweep         ");
@@ -77,19 +81,19 @@ void setMenuSelection()
 void modeChosen()
 {
     printMessage("CMD_START");
-    if (currentSelection == 0)
+    if (currentSelection == 1)
     {
         wallFollow();
     }
 
-    else if (currentSelection == 1)
+    else if (currentSelection == 2)
     {
         control();
     }
 
-    else if (currentSelection == 2)
+    else if (currentSelection == 3)
     {
-        sweep();
+        sweepMenu();
     }
 }
 
@@ -135,7 +139,7 @@ void control()
     }
 }
 
-void sweep()
+void sweepMenu()
 {
     int analogValue = 0;
    
@@ -147,7 +151,8 @@ void sweep()
 
         if (analogValue <= 400 && analogValue >= 200) // Up
         {
-            sweepAction();
+            delay(200);
+            sweep();
         }
 
         else if (analogValue <= 1000 && analogValue >= 800) // Select
@@ -158,201 +163,212 @@ void sweep()
     }
 }
 
-void sweepAction()
+String sweep()
 {
-    int closestObjectAngleWide = 0;
+    int closestObjectAngle = 0;
 
-    int closestObjectAngleFineStart;
-    int closestObjectAngleFineEnd;
-    int closestObjectAngleFine;
-
-
-    String closestObjectDistance = "5";
+    String closestObjectDistance = "10";
     String tempObjectDistance;
     String angleString;
 
-    float sumDistance = 0; 
+    //Find close to where the closest distance is
 
     for (int i = 360; i > -1; i = i - 10)
     {
         // Create String
         angleString = "CMD_SEN_ROT_" + String(i);
         printMessage(angleString);
-        delay(50);
         printMessage("CMD_SEN_IR");
-        delay(50);
         tempObjectDistance = Serial.readString();
 
         if ((closestObjectDistance.toFloat()) > (tempObjectDistance.toFloat()) && tempObjectDistance.charAt(0) != 'N')
         {
             closestObjectDistance = tempObjectDistance;
-            closestObjectAngleWide = i;
+            closestObjectAngle = i;
         }
     }
 
-    // Quadrant 1
-
-    if (closestObjectAngleWide >= 0 && closestObjectAngleWide <= 30)
-    {
-        closestObjectAngleFineStart = 30;
-        closestObjectAngleFineEnd = 0;
-    }
-
-    else if (closestObjectAngleWide > 30 && closestObjectAngleWide <= 60)
-    {
-        closestObjectAngleFineStart = 60;
-        closestObjectAngleFineEnd = 30;
-    }
-
-    else if (closestObjectAngleWide > 60 && closestObjectAngleWide <= 90)
-    {
-        closestObjectAngleFineStart = 90;
-        closestObjectAngleFineEnd = 60;
-    }
-
-    else if (closestObjectAngleWide > 90 && closestObjectAngleWide <= 120)
-    {
-        closestObjectAngleFineStart = 120;
-        closestObjectAngleFineEnd = 90;
-    }
-
-    else if (closestObjectAngleWide > 120 && closestObjectAngleWide <= 150)
-    {
-        closestObjectAngleFineStart = 150;
-        closestObjectAngleFineEnd = 120;
-    }
-
-    else if (closestObjectAngleWide > 150 && closestObjectAngleWide <= 180)
-    {
-        closestObjectAngleFineStart = 180;
-        closestObjectAngleFineEnd = 150;
-    }
-
-    else if (closestObjectAngleWide > 180 && closestObjectAngleWide <= 210)
-    {
-        closestObjectAngleFineStart = 210;
-        closestObjectAngleFineEnd = 180;
-    }
-
-    else if (closestObjectAngleWide > 210 && closestObjectAngleWide <= 240)
-    {
-        closestObjectAngleFineStart = 240;
-        closestObjectAngleFineEnd = 210;
-    }
-
-    else if (closestObjectAngleWide > 240 && closestObjectAngleWide <= 270)
-    {
-        closestObjectAngleFineStart = 270;
-        closestObjectAngleFineEnd = 240;
-    }
-
-    else if (closestObjectAngleWide > 270 && closestObjectAngleWide <= 300)
-    {
-        closestObjectAngleFineStart = 300;
-        closestObjectAngleFineEnd = 270;
-    }
-
-    else if (closestObjectAngleWide > 300 && closestObjectAngleWide <= 330)
-    {
-        closestObjectAngleFineStart = 330;
-        closestObjectAngleFineEnd = 300;
-    }
-
-    else if (closestObjectAngleWide > 330 && closestObjectAngleWide <= 360)
-    {
-        closestObjectAngleFineStart = 360;
-        closestObjectAngleFineEnd = 330;
-    }
-
-    closestObjectDistance = "5";
-
-    for (int j = closestObjectAngleFineStart; j >= closestObjectAngleFineEnd; j--)
-    {
-
-        angleString = "CMD_SEN_ROT_" + String(j);
-        printMessage(angleString);
-
-        for(int x = 0; x < 2; x++)
-        {   
-            String tempString;
-
-            printMessage("CMD_SEN_IR");
-            tempString = Serial.readString();
-
-            if(tempString.charAt(0)=='N')
-            {
-                break;
-            }
-
-            else
-            {
-                sumDistance = sumDistance + tempString.toFloat();
-                tempObjectDistance = String(sumDistance/x);
-            }
-            
-        }
-
-        if ((closestObjectDistance.toFloat()) > (tempObjectDistance.toFloat()) && tempObjectDistance.charAt(0) != 'N')
-        {
-            closestObjectDistance = tempObjectDistance;
-            closestObjectAngleFine = j;
-            lcd.setCursor(0, 1);
-            lcd.print("              ");
-            lcd.setCursor(0, 1);
-            lcd.print(j);
-        }
-    }
-
-    for (int l = 0; l < closestObjectAngleFine; l++)
+    for (int l = 0; l < closestObjectAngle; l++)
     {
         printMessage("CMD_ACT_ROT_0_1");
     }
+
+    if(closestObjectDistance = "10")
+    {
+        return "10";
+    }
+
+    //Reset for next movement
+
+    closestObjectDistance = "10";
+    printMessage("CMD_SEN_ROT_0");
+
+    //Find actual closest distance
+
+    for(int j = 10; j > -11; j--)
+    {
+        angleString = "CMD_SEN_ROT_" + String(j);
+        printMessage(angleString);
+        printMessage("CMD_SEN_IR");
+        tempObjectDistance = Serial.readString();
+        if ((closestObjectDistance.toFloat()) > (tempObjectDistance.toFloat()) && tempObjectDistance.charAt(0) != 'N')
+        {
+            closestObjectDistance = tempObjectDistance;
+            closestObjectAngle = j;
+        }
+    }
+
+    for (int m = 0; m < closestObjectAngle; m++)
+    {
+        printMessage("CMD_ACT_ROT_0_1");
+    }
+
+    printMessage("CMD_SEN_ROT_0");
+
+    return closestObjectDistance;
 }
 
 
-void wallFollow() // Clockwise
+void wallFollowMenu()
 {
-    String distanceFromWall;
+    int analogValue = 0;
+    analogValue = analogRead(A0);
 
-    float distanceToTravel;
-
-    String distanceToTravelS;
-
-    // Find closest wall
-
-    sweepAction();
-
-    //Move until 2m away from wall
-
-    while (distanceFromWall.toFloat() > 2 || distanceFromWall.charAt(0)=='N')
+    if (analogValue <= 400 && analogValue >= 200) // Up
     {
-        printMessage("CMD_SEN_IR");
-        distanceFromWall = Serial.readString();
-        printMessage("CMD_ACT_LAT_1_0.01");
+        //Stop the robot
     }
 
-    // Turn bot towards next wall
+    else if (analogValue <= 1000 && analogValue >= 800) // Select
+    {
+        delay(200);
+        mainMenu();
+    }
+}
 
-    printMessage("CMD_ACT_ROT_1_270");
+void wallFollow()
+{
+    moveIntoRange();
+    moveTo2m();
+    moveAcrossWall();
+}
 
-    // Move until 2m away from wall
+void moveIntoRange()
+{
+    String distanceFromWall;
+    sweep();
 
-
-    /*printMessage("CMD_SEN_IR");
+    printMessage("CMD_SEN_IR");
     distanceFromWall = Serial.readString();
 
-    distanceToTravel = distanceFromWall.toFloat() - 2;
-    distanceToTravelS = "CMD_ACT_LAT_1_" + String(distanceToTravel);
+    while(distanceFromWall.charAt(0) == 'N')
+    {
+        printMessage("CMD_ACT_LAT_1_3");
+        printMessage("CMD_SEN_IR");
+        distanceFromWall = Serial.readString();
+    }
+}
 
-    printMessage(distanceToTravelS);*/
+void moveTo2m()
+{
+    String distanceFromWall;
+    float distanceToTravel;
 
-    // Start moving forward
+    while(true)
+    {
 
-    // Rotate sensor 90 degrees to left and regularly check if still 2m away
+        printMessage("CMD_SEN_IR");
+        distanceFromWall = Serial.readString();
 
-    // Rotate sensor straight ahead and check if 2m away from nearest wall
+        delay(100);
 
-    // If close to 2m away from wall, move forward until 2m away then rotate robot and repeat
+        if(distanceFromWall.toFloat() > 2.1 && distanceFromWall.charAt(0)!='N')
+        {
+            distanceToTravel = distanceFromWall.toFloat() - 2;
+            printMessage("CMD_ACT_LAT_1_" + String(distanceToTravel));
+        }
+
+        else if(distanceFromWall.toFloat() < 1.9 && distanceFromWall.charAt(0)!='N')
+        {
+            distanceToTravel = 2 - distanceFromWall.toFloat();
+            printMessage("CMD_ACT_LAT_0_" + String(distanceToTravel));
+        }
+
+        else
+        {
+            printMessage("CMD_SEN_ROT_0");
+            break;
+        } 
+    }
+}
+
+void moveAcrossWall()
+{
+    String distanceFromNextWall;
+
+    //Turn to face next wall
+
+    printMessage("CMD_ACT_ROT_1_270");
+    printMessage("CMD_SEN_ROT_0");
+
+    //Take actions to get to 2m from next wall
+
+    while(true)
+    {
+        printMessage("CMD_SEN_IR");
+        distanceFromNextWall = Serial.readString();
+
+        delay(100);
+
+        if(distanceFromNextWall.charAt(0)=='N')
+        {
+            printMessage("CMD_ACT_LAT_1_1");
+            printMessage("CMD_ACT_ROT_1_90");
+            printMessage("CMD_SEN_ROT_0");
+
+            closeWallSweep();
+            moveTo2m();
+
+            printMessage("CMD_ACT_ROT_0_90");
+            printMessage("CMD_SEN_ROT_0");
+
+        }    
+
+        else
+        {
+            moveTo2m();
+        }
+        
+    }
+}
+
+void closeWallSweep()
+{
+    int closestObjectAngle = 0;
+
+    String closestObjectDistance = "10";
+    String tempObjectDistance;
+    String angleString;
+
+     for(int j = 10; j > -11; j--)
+    {
+        angleString = "CMD_SEN_ROT_" + String(j);
+        printMessage(angleString);
+        printMessage("CMD_SEN_IR");
+        tempObjectDistance = Serial.readString();
+        if ((closestObjectDistance.toFloat()) > (tempObjectDistance.toFloat()) && tempObjectDistance.charAt(0) != 'N')
+        {
+            closestObjectDistance = tempObjectDistance;
+            closestObjectAngle = j;
+        }
+    }
+
+    for (int m = 0; m < closestObjectAngle; m++)
+    {
+        printMessage("CMD_ACT_ROT_0_1");
+    }
+
+    printMessage("CMD_SEN_ROT_0");
 }
 
 
@@ -361,8 +377,4 @@ void printMessage(String message)
     Serial.print(message);
     Serial.write(13);
     Serial.write(10);
-}
-
-void recieveMessage()
-{
 }
